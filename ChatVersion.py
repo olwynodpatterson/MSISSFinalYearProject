@@ -44,26 +44,24 @@ def get_10k_filing_urls(cik):
 
     return None
 
-def download_file(url, folder='10k_filings'):
+def download_file(url, cik, folder='10k_filings'):
     # Download the file from the given URL
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    document_page = requests.get(url)
-    soup = BeautifulSoup(document_page.text, 'html.parser')
-    doc_link = soup.find('a', attrs={'href': lambda x: x and x.endswith('.txt')})
-    if doc_link:
-        doc_url = 'https://www.sec.gov' + doc_link['href']
-        file_response = requests.get(doc_url, stream=True)
-        filename = url.split('/')[-1] + '.txt'
-        path = os.path.join(folder, filename)
+    # Set the file path using the CIK
+    file_path = os.path.join(folder, f'{cik}_10k_form.txt')
 
-        with open(path, 'wb') as f:
-            for chunk in file_response.iter_content(chunk_size=8192):
+    # Make a request to download the file
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    response = requests.get(url, headers=headers, stream=True)
+    if response.status_code == 200:
+        with open(file_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
-        print(f"Downloaded: {filename}")
+        print(f"Downloaded: {file_path}")
     else:
-        print("Document link not found.")
+        print(f"Failed to download file. Status code: {response.status_code}")
 
 def main():
     url = 'https://www.sec.gov/include/ticker.txt'
@@ -74,7 +72,7 @@ def main():
     filing_url = get_10k_filing_urls(cik)
     print(f"Filing URL: {filing_url}")
     if filing_url:
-        download_file(filing_url)
+        download_file(filing_url, cik)
         time.sleep(1)  # Respectful delay between requests
     else:
         print(f"No 10-K filings found for CIK {cik}.")
