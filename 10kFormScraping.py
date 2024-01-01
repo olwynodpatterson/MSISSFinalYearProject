@@ -67,7 +67,7 @@ def main():
     url = 'https://www.sec.gov/include/ticker.txt'
     tickers = get_ticker_list(url)
     i=0
-    while i <=50:
+    while i <50:
         cik =  choose_random_cik(tickers) #320193
         print(f"Selected CIK: {cik}")
         filing_url = get_10k_filing_urls(cik)
