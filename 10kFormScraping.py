@@ -66,16 +66,18 @@ def download_file(url, cik, folder='10k_filings'):
 def main():
     url = 'https://www.sec.gov/include/ticker.txt'
     tickers = get_ticker_list(url)
-    cik = 320193 #choose_random_cik(tickers)
-    print(f"Selected CIK: {cik}")
-
-    filing_url = get_10k_filing_urls(cik)
-    print(f"Filing URL: {filing_url}")
-    if filing_url:
-        download_file(filing_url, cik)
-        time.sleep(1)  # Respectful delay between requests
-    else:
-        print(f"No 10-K filings found for CIK {cik}.")
+    i=0
+    while i <=50:
+        cik =  choose_random_cik(tickers) #320193
+        print(f"Selected CIK: {cik}")
+        filing_url = get_10k_filing_urls(cik)
+        print(f"Filing URL: {filing_url}")
+        if filing_url:
+            download_file(filing_url, cik)
+            time.sleep(1)  # Respectful delay between requests
+            i += 1
+        else:
+            print(f"No 10-K filings found for CIK {cik}.")
 
 if __name__ == "__main__":
     main()
