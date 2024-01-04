@@ -68,7 +68,7 @@ def main():
     tickers = get_ticker_list(url)
     i=0
     while i <50:
-        cik =  choose_random_cik(tickers) #320193
+        cik =  choose_random_cik(tickers) 
         print(f"Selected CIK: {cik}")
         filing_url = get_10k_filing_urls(cik)
         print(f"Filing URL: {filing_url}")
