@@ -8,24 +8,28 @@ import random
 def get_ticker_list(url):
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
+    # Check if the request was successful
     if response.status_code == 200:
         tickers = response.text.splitlines()
         return tickers
     else:
+        # Raise an exception if the request failed
         raise Exception(f"Failed to retrieve data. Status code: {response.status_code}")
 
 # Function to choose a random CIK (Central Index Key) from the list of tickers
 def choose_random_cik(tickers):
+    # Choose a random ticker and associated CIK
     ticker, cik = random.choice(tickers).split('\t')
     return cik
 
+# Function to get the URLs of 10-K filings for a given CIK
 def get_10k_filing_urls(cik):
-    time.sleep(3)
+    time.sleep(3) # Delay to avoid overwhelming the server
     # Fetch the URLs for 10-K filings
     filings_url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=10-K&dateb=&owner=exclude&count=10"
-    #print(filings_url)
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(filings_url, headers=headers)
+    # Check response status
     if response.status_code != 200:
         print("Error fetching filings:", response.status_code)
         return None 
@@ -35,6 +39,7 @@ def get_10k_filing_urls(cik):
     if not table:
         return None
 
+    # Parse the table to get the filing links
     for row in table.find_all('tr')[1:]:
         cols = row.find_all('td')
         if len(cols) > 1:
@@ -44,8 +49,9 @@ def get_10k_filing_urls(cik):
 
     return None
 
+# Function to download a file from a given URL
 def download_file(url, cik, folder='10k_filings'):
-    # Download the file from the given URL
+    # Create the folder if it doesn't exist
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -63,6 +69,7 @@ def download_file(url, cik, folder='10k_filings'):
     else:
         print(f"Failed to download file. Status code: {response.status_code}")
 
+# Main function to drive the program
 def main():
     url = 'https://www.sec.gov/include/ticker.txt'
     tickers = get_ticker_list(url)
@@ -81,3 +88,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
