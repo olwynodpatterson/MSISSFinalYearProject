@@ -49,6 +49,15 @@ def get_10k_filing_urls(cik):
 
     return None
 
+def dehtml(html_content):
+    # Use BeautifulSoup to parse the HTML content
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    # Extract text from the parsed HTML
+    text = soup.get_text()
+
+    return text
+
 # Function to download a file from a given URL
 def download_file(url, cik, folder='10k_filings'):
     # Create the folder if it doesn't exist
@@ -56,16 +65,29 @@ def download_file(url, cik, folder='10k_filings'):
         os.makedirs(folder)
 
     # Set the file path using the CIK
-    file_path = os.path.join(folder, f'{cik}_10k_form.txt')
+    html_file_path = os.path.join(folder, f'{cik}_10k_form.html')
+    text_file_path = os.path.join(folder, f'{cik}_10k_form.txt')
 
     # Make a request to download the file
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers, stream=True)
     if response.status_code == 200:
-        with open(file_path, 'wb') as f:
+        with open(html_file_path, 'wb') as html_file:
             for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        print(f"Downloaded: {file_path}")
+                html_file.write(chunk)
+        print(f"Downloaded HTML: {html_file_path}")
+
+        # Read the HTML content
+        with open(html_file_path, 'r', encoding='utf-8') as html_file:
+            html_content = html_file.read()
+
+        # Convert HTML to plain text
+        plain_text = dehtml(html_content)
+
+        # Save the plain text
+        with open(text_file_path, 'w', encoding='utf-8') as text_file:
+            text_file.write(plain_text)
+        print(f"Converted to Text: {text_file_path}")
     else:
         print(f"Failed to download file. Status code: {response.status_code}")
 
@@ -74,7 +96,7 @@ def main():
     url = 'https://www.sec.gov/include/ticker.txt'
     tickers = get_ticker_list(url)
     i=0
-    while i <50:
+    while i <2:
         cik =  choose_random_cik(tickers) 
         print(f"Selected CIK: {cik}")
         filing_url = get_10k_filing_urls(cik)
